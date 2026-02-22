@@ -1,0 +1,20 @@
+{
+    "palettes": [
+        "main-palette"
+    ],
+    "gradients": [
+        "purple-night",
+        "wine-glow",
+        "teal-glow",
+        "ocean",
+        "forest",
+        "aurora",
+        "dusk",
+        "ember",
+        "deep-space",
+        "slate-mist",
+        "cold-fire",
+        "poison",
+        "nebula"
+    ]
+}
