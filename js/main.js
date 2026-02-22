@@ -21,7 +21,7 @@ async function loadData() {
     ];
 
     const rampFetches = rampNames.map(n =>
-        fetch(`json/gradient-${n.replace(/_/g, '-')}.json`).then(r => r.json())
+        fetch(`json/gradient-${n}.json`).then(r => r.json())
     );
     GRADIENTS = await Promise.all(rampFetches);
 }
@@ -239,4 +239,5 @@ function moveTooltip(e) {
 
 function hideTooltip() {
     tooltip.style.display = 'none';
+
 }
