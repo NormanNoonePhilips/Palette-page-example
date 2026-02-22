@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Palette Picker</title>
+    <style>
+        :root {
+            --bg: #070c1d;
+            --bg2: #191b3f;
+            --bg3: #1f394d;
+            --border: #32495f;
+            --text: #86e0ce;
+            --text-dim: #446374;
+            --accent: #9f3c91;
+            --font: 'Courier New', monospace;
+            --cell: 28px;
+            --gap: 4px;
+
+            /* baseline colors when no color in palette is selected */
+            --dyn-text: #86e0ce;
+            --dyn-text-dim: #446374;
+            --dyn-accent: #9f3c91;
+            --dyn-border: #32495f;
+            --dyn-link: #3fa0a4;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--dyn-text);
+            font-family: var(--font);
+            font-size: 12px;
+            padding: 20px;
+            min-height: 100vh;
+            image-rendering: pixelated;
+        }
+
+        h1 {
+            font-size: 14px;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            color: var(--dyn-accent);
+            margin-bottom: 6px;
+        }
+
+        .subtitle {
+            color: var(--dyn-text-dim);
+            font-size: 11px;
+            margin-bottom: 24px;
+            letter-spacing: 1px;
+        }
+
+        .section {
+            margin-bottom: 28px;
+        }
+
+        .section-title {
+            font-size: 10px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--dyn-text-dim);
+            border-bottom: 1px solid var(--dyn-border);
+            padding-bottom: 5px;
+            margin-bottom: 12px;
+        }
+
+        .colors-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--gap);
+        }
+
+        .swatch {
+            width: var(--cell);
+            height: var(--cell);
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: border-color 0.1s, transform 0.1s;
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .swatch:hover {
+            border-color: var(--dyn-text);
+            transform: scale(1.2);
+            z-index: 10;
+        }
+
+        .swatch.selected {
+            border-color: #eee98a;
+            transform: scale(1.15);
+            z-index: 10;
+        }
+
+        .families-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .family-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .family-label {
+            width: 76px;
+            font-size: 10px;
+            letter-spacing: 1px;
+            color: var(--dyn-text-dim);
+            text-transform: uppercase;
+            flex-shrink: 0;
+        }
+
+        .family-swatches {
+            display: flex;
+            gap: var(--gap);
+        }
+
+        .gradients-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .gradient-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+
+        .gradient-label {
+            width: 100px;
+            font-size: 10px;
+            letter-spacing: 1px;
+            color: var(--dyn-text-dim);
+            text-transform: uppercase;
+            flex-shrink: 0;
+        }
+
+        .gradient-bar {
+            display: flex;
+            gap: 2px;
+            flex: 1;
+            max-width: 280px;
+        }
+
+        .gradient-bar .swatch {
+            flex: 1;
+            height: 20px;
+            width: auto;
+        }
+
+        .gradient-copy {
+            font-size: 10px;
+            color: var(--dyn-text-dim);
+            letter-spacing: 1px;
+            padding: 2px 6px;
+            border: 1px solid var(--dyn-border);
+            cursor: pointer;
+            transition: color 0.15s, border-color 0.15s;
+            white-space: nowrap;
+        }
+
+        .gradient-copy:hover {
+            color: var(--dyn-text);
+            border-color: var(--dyn-text);
+        }
+
+        .gradient-row.copied .gradient-copy {
+            color: #eee98a;
+            border-color: #eee98a;
+        }
+
+        .info-bar {
+            position: sticky;
+            bottom: 0;
+            background: var(--bg2);
+            border-top: 1px solid var(--dyn-border);
+            padding: 10px 16px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin: 0 -20px -20px;
+            min-height: 48px;
+        }
+
+        .info-swatch {
+            width: 32px;
+            height: 32px;
+            border: 2px solid var(--dyn-border);
+            flex-shrink: 0;
+        }
+
+        .info-hex {
+            font-size: 15px;
+            letter-spacing: 3px;
+            color: var(--dyn-text);
+        }
+
+        .info-name {
+            font-size: 10px;
+            color: var(--dyn-text-dim);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .info-copy {
+            margin-left: auto;
+            font-size: 10px;
+            letter-spacing: 2px;
+            color: var(--dyn-text-dim);
+            border: 1px solid var(--dyn-border);
+            padding: 4px 10px;
+            cursor: pointer;
+            text-transform: uppercase;
+            transition: color 0.15s, border-color 0.15s;
+        }
+
+        .info-copy:hover {
+            color: var(--dyn-text);
+            border-color: var(--dyn-text);
+        }
+
+        .info-copy.copied {
+            color: #eee98a;
+            border-color: #eee98a;
+        }
+
+        .meta-block {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            margin-bottom: 14px;
+        }
+
+        .meta-row {
+            display: flex;
+            align-items: baseline;
+            gap: 10px;
+        }
+
+        .meta-label {
+            width: 60px;
+            font-size: 10px;
+            letter-spacing: 2px;
+            color: var(--dyn-text-dim);
+            text-transform: uppercase;
+            flex-shrink: 0;
+        }
+
+        .meta-value {
+            font-size: 11px;
+            color: var(--dyn-text);
+        }
+
+        .meta-link {
+            color: var(--dyn-link);
+            text-decoration: none;
+            letter-spacing: 1px;
+            font-size: 11px;
+            border-bottom: 1px solid transparent;
+            transition: border-color 0.15s, color 0.15s;
+        }
+
+        .meta-link:hover {
+            color: var(--dyn-text);
+            border-bottom-color: var(--dyn-text);
+        }
+
+        .meta-sub {
+            font-size: 10px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--dyn-text-dim);
+            margin: 14px 0 8px;
+        }
+
+        .analysis-grid {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 4px;
+        }
+
+        .analysis-link {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            text-decoration: none;
+        }
+
+        .analysis-img {
+            max-width: 280px;
+            width: 100%;
+            border: 1px solid var(--dyn-border);
+            image-rendering: pixelated;
+            transition: border-color 0.15s;
+        }
+
+        .analysis-link:hover .analysis-img {
+            border-color: var(--dyn-text);
+        }
+
+        .analysis-caption {
+            font-size: 10px;
+            color: var(--dyn-text-dim);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .art-grid {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .art-link {
+            display: block;
+            text-decoration: none;
+            border: 1px solid var(--dyn-border);
+            transition: border-color 0.15s;
+        }
+
+        .art-link:hover {
+            border-color: var(--dyn-text);
+        }
+
+        .art-img {
+            display: block;
+            max-width: 280px;
+            max-height: 220px;
+            width: auto;
+            height: auto;
+            image-rendering: pixelated;
+        }
+
+        .tooltip {
+            position: fixed;
+            background: var(--bg2);
+            border: 1px solid var(--dyn-border);
+            color: var(--dyn-text);
+            font-family: var(--font);
+            font-size: 10px;
+            padding: 4px 8px;
+            pointer-events: none;
+            z-index: 100;
+            letter-spacing: 1px;
+            white-space: nowrap;
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>PALETTE PICKER</h1>
+    <p class="subtitle">click any color or gradient to copy, use the ramps directly in recolorImage()</p>
+
+    <div class="section">
+        <div class="section-title">palette info</div>
+        <div class="meta-block">
+            <div class="meta-row">
+                <span class="meta-label">source</span>
+                <a href="https://lospec.com/palette-list/punolite-plus-remake" target="_blank"
+                    class="meta-link">lospec.com ·
+                    punolite-plus-remake</a>
+            </div>
+            <div class="meta-row">
+                <span class="meta-label">author</span>
+                <span class="meta-value">Punoli &nbsp;·&nbsp;
+                    <a href="https://lospec.com/punoli" target="_blank" class="meta-link">lospec</a> ·
+                    <a href="https://x.com/Puno1ee" target="_blank" class="meta-link">x/twitter</a> ·
+                    <a href="https://www.instagram.com/punolipixelart" target="_blank" class="meta-link">instagram</a>
+                </span>
+            </div>
+        </div>
+
+        <div class="meta-sub">palette analysis</div>
+        <div class="analysis-grid">
+            <a href="https://lospec.com/palettes/punolite-plus-remake/dawnbringer-analysis.png" target="_blank"
+                class="analysis-link">
+                <img src="https://lospec.com/palettes/punolite-plus-remake/dawnbringer-analysis.png"
+                    alt="Dawnbringer Analysis" class="analysis-img">
+                <span class="analysis-caption">dawnbringer analysis</span>
+            </a>
+            <a href="https://lospec.com/palettes/punolite-plus-remake/censor-analysis.png" target="_blank"
+                class="analysis-link">
+                <img src="https://lospec.com/palettes/punolite-plus-remake/censor-analysis.png" alt="Censor Analysis"
+                    class="analysis-img">
+                <span class="analysis-caption">censor analysis</span>
+            </a>
+        </div>
+
+        <div class="meta-sub">art examples</div>
+        <div class="art-grid">
+            <a href="https://cdn.lospec.com/palette-examples/punolite-plus-again-palette-example-by-punoli-60bd18.png"
+                target="_blank" class="art-link">
+                <img src="https://cdn.lospec.com/palette-examples/punolite-plus-again-palette-example-by-punoli-60bd18.png"
+                    alt="Palette example by Punoli" class="art-img">
+            </a>
+            <a href="https://cdn.lospec.com/gallery/city-639332.gif" target="_blank" class="art-link">
+                <img src="https://cdn.lospec.com/gallery/city-639332.gif" alt="City by Punoli" class="art-img">
+            </a>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">all colors</div>
+        <div class="colors-grid" id="allColors"></div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">families (dark -> light)</div>
+        <div class="families-grid" id="families"></div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">gradient ramps</div>
+        <div class="gradients-grid" id="gradients"></div>
+    </div>
+
+    <div class="info-bar">
+        <div class="info-swatch" id="infoSwatch"></div>
+        <div>
+            <div class="info-hex" id="infoHex"></div>
+            <div class="info-name" id="infoName">select a color</div>
+        </div>
+        <div class="info-copy" id="infoCopy">copy hex</div>
+    </div>
+
+    <div class="tooltip" id="tooltip"></div>
+
+    <script src="js/main.js"></script>
+</body>
+
+</html>
