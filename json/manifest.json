@@ -3,18 +3,18 @@
         "main-palette"
     ],
     "gradients": [
-        "gradient-purple-night",
-        "gradient-wine-glow",
-        "gradient-teal-glow",
-        "gradient-ocean",
-        "gradient-forest",
-        "gradient-aurora",
-        "gradient-dusk",
-        "gradient-ember",
-        "gradient-deep-space",
-        "gradient-slate-mist",
-        "gradient-cold-fire",
-        "gradient-poison",
-        "gradient-nebula"
+        "purple-night",
+        "wine-glow",
+        "teal-glow",
+        "ocean",
+        "forest",
+        "aurora",
+        "dusk",
+        "ember",
+        "deep-space",
+        "slate-mist",
+        "cold-fire",
+        "poison",
+        "nebula"
     ]
 }
